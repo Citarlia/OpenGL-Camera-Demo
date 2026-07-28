@@ -15,7 +15,8 @@ link_directories(lib)
 # 3. 添加源文件 (记得把 glad.c 加进来)
 add_executable(Texture src/glad.c main.cpp src/Shader.cpp
         include/stb_image.h
-        src/Texture.cpp)
+        src/Texture.cpp
+        src/Application.cpp)
 
 # 4. 链接库
 target_include_directories(Texture PRIVATE include)

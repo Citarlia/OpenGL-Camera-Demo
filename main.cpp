@@ -7,11 +7,15 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
-
+#include "Application.h"
 #include "Shader.h"
 #include "Texture.h"
 
 using namespace glm;
+
+void onResize(int width, int height) {
+    glViewport(0, 0, width, height);
+}
 
 float vertexes[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -68,12 +72,7 @@ static float lastX = 400, lastY = 300;
 
 void processInput(GLFWwindow *window)
 {
-    float deltaTime = 0.0f; // 当前帧与上一帧的时间差
-    float lastFrame = 0.0f; // 上一帧的时间
-    float currentFrame = glfwGetTime();
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
-    float cameraSpeed = 0.001f * deltaTime;// adjust accordingly
+    float cameraSpeed = 0.01f;// adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -124,24 +123,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 }
 
 int main() {
-#pragma region Frame
-    if (!glfwInit()) {
-        std::cerr << "GLFW初始化失败！\n";
-        return 1;
-    }
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "openGL test", nullptr, nullptr);
-    if (!window) {
-        std::cerr << "窗口加载失败！\n";
-        return 1;
-    }
-
-    glfwMakeContextCurrent(window); // 将窗口设为当前上下文
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        return 1;
-    }
-#pragma endregion
-
+    Application* application = Application::getInstance();
+    application->init();
+    application->setResizeCallBack(onResize);
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -168,7 +153,7 @@ int main() {
 
     glClearColor(0.2, 0.3, 0.3, 1);
     glEnable(GL_DEPTH_TEST);
-    while (!glfwWindowShouldClose(window)) {
+    while (application->update()) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.bind();
         glBindVertexArray(vao);
@@ -179,9 +164,9 @@ int main() {
         // 模型矩阵
         mat4 model = rotate(mat4(1.0), radians(-55.0f), vec3(1.0, 1.0, 0.0));
         // 视图矩阵
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        processInput(window);
-        glfwSetCursorPosCallback(window, mouse_callback);
+        glfwSetInputMode(application->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        processInput(application->getWindow());
+        glfwSetCursorPosCallback(application->getWindow(), mouse_callback);
         float radius = 10.0f;
         float camX = sin(glfwGetTime()) * radius;
         float camZ = cos(glfwGetTime()) * radius;
@@ -198,12 +183,9 @@ int main() {
 
         glDrawArrays(GL_TRIANGLES, 0 ,36);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    application->destroy();
 
     return 0;
 }
