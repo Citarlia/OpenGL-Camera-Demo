@@ -4,11 +4,11 @@
 
 #ifndef TEXTURE_TRACKBALLCONTROLLER_H
 #define TEXTURE_TRACKBALLCONTROLLER_H
-#include "CameraController.h"
 
 
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
+using namespace glm;
 
 class Camera;   // 前向声明
 
@@ -31,10 +31,11 @@ public:
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
     static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
     static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+    static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 private:
     Camera* m_camera;
-    vec3 m_target;
+    vec<3, float> m_target;
     float m_radius;   // 摄像机到目标的距离
     float m_yaw;      // 水平旋转角（弧度）
     float m_pitch;    // 垂直旋转角（弧度）
@@ -43,8 +44,15 @@ private:
     float m_scrollSensitivity;
     bool m_enabled;
 
+    // 较上一帧的偏移量
+    double dx;
+    double dy;
+
     // 鼠标拖拽状态
-    bool m_isDragging;
+    bool m_leftIsDragging;
+    bool m_rightIsDragging;
+    bool m_middleIsDragging;
+    bool m_scrollMoved;
     double m_lastX, m_lastY;
 
     // 内部辅助：将球坐标转为位置

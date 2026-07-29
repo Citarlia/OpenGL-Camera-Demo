@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(Texture)
+project(OpenGLBasic)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -13,7 +13,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resource
 link_directories(lib)
 
 # 3. 添加源文件 (记得把 glad.c 加进来)
-add_executable(Texture src/glad.c main.cpp src/Shader.cpp
+add_executable(OpenGLBasic src/glad.c main.cpp src/Shader.cpp
         include/stb_image.h
         src/Texture.cpp
         src/Application.cpp
@@ -24,5 +24,5 @@ add_executable(Texture src/glad.c main.cpp src/Shader.cpp
 )
 
 # 4. 链接库
-target_include_directories(Texture PRIVATE include)
-target_link_libraries(Texture glfw3 opengl32)
+target_include_directories(OpenGLBasic PRIVATE include)
+target_link_libraries(OpenGLBasic glfw3 opengl32)
