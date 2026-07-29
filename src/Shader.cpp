@@ -1,7 +1,7 @@
 #include "Shader.h"
 
 Shader::Shader(const std::string& vs_path,const std::string& fs_path) : m_vertexShaderFilePath(vs_path),
-            m_frageShaderFilePath(fs_path), m_shaderID(0) {
+                                                                        m_frageShaderFilePath(fs_path), m_shaderID(0) {
     createShader();
 }
 
@@ -127,4 +127,13 @@ void Shader::reportError() {
         }
         assert(false);
     }
+}
+
+void Shader::setMatrix(const std::string name, glm::mat4 &matrix) {
+    GLuint location = glGetUniformLocation(m_shaderID, name.c_str());
+    if (!location) {
+        std::cerr << "未找到矩阵定位！\n";
+        return;
+    }
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 }

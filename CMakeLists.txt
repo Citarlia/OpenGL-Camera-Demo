@@ -16,7 +16,12 @@ link_directories(lib)
 add_executable(Texture src/glad.c main.cpp src/Shader.cpp
         include/stb_image.h
         src/Texture.cpp
-        src/Application.cpp)
+        src/Application.cpp
+        src/Camera.cpp
+        src/OrthographicCamera.cpp
+        src/PerspectiveCamera.cpp
+        src/TrackBallController.cpp
+)
 
 # 4. 链接库
 target_include_directories(Texture PRIVATE include)

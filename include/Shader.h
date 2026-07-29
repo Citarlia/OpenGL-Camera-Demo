@@ -7,6 +7,8 @@
 #include <string>
 #include <map>
 #include <assert.h>
+#include <glm/fwd.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 class Shader
@@ -30,6 +32,7 @@ public:
     void setUniform4f(std::string &name, float v1, float v2, float v3, float v4);
     static void reportError();
     GLuint getProgramID() { return m_shaderID; }
+    void setMatrix(const std::string name, glm::mat4& matrix);
 };
 
 #endif

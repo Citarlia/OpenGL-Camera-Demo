@@ -10,11 +10,19 @@
 #include "Application.h"
 #include "Shader.h"
 #include "Texture.h"
-
+#include "PerspectiveCamera.h"
+#include "TrackBallController.h"
 using namespace glm;
 
 void onResize(int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+void windowCallBackUpdate(GLFWwindow* window) {
+    // 注册回调
+    glfwSetMouseButtonCallback(window, TrackBallController::mouseButtonCallback);
+    glfwSetCursorPosCallback(window, TrackBallController::cursorPosCallback);
+    glfwSetScrollCallback(window, TrackBallController::scrollCallback);
 }
 
 float vertexes[] = {
@@ -61,72 +69,14 @@ float vertexes[] = {
        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
-static vec3 cameraPos = vec3(0.0f, 0.0f, 1.0f);
-static vec3 cameraTarget = vec3(0.0f, 0.0f, 0.0f);
-static vec3 cameraDirection = normalize(cameraPos - cameraTarget);
-static vec3 up = vec3(0.0f, 1.0f, 0.0f);
-static vec3 cameraRight = normalize(cross(up, cameraDirection));
-static vec3 cameraUp = cross(cameraDirection, cameraRight);
-static vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-static float lastX = 400, lastY = 300;
-
-void processInput(GLFWwindow *window)
-{
-    float cameraSpeed = 0.01f;// adjust accordingly
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        cameraPos.y += cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-        cameraPos.y -=  cameraSpeed;
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    static bool firstMouse = true;
-    if(firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-    static float pitch = 0;
-    static float yaw = 0;
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
-
-    float sensitivity = 0.05;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    yaw   += xoffset;
-    pitch += yoffset;
-
-    if(pitch > 89.0f)
-        pitch = 89.0f;
-    if(pitch < -89.0f)
-        pitch = -89.0f;
-
-    glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(front);
-}
-
 int main() {
 
     Application* application = Application::getInstance();
     application->init();
     application->setResizeCallBack(onResize);
+
+    GLFWwindow* window = application->getWindow();
+
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -143,46 +93,50 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
     glBindVertexArray(0);
 
+    // 设置着色器
     Shader shader = Shader({"../resource/MyShader.vert"}, {"../resource/MyShader.frag"});
     shader.createShader();
 
+    // 设置纹理
     Texture texture = Texture({"../textures/sheri.png"}, 0);
     texture.setFilter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     texture.setWrapper(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    texture.setFilter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture.setWrapper(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture.setSampler(shader.getProgramID(), {"sampler_"});
+
+    // 设置摄像机
+    PerspectiveCamera perspective_camera(45.0f, 800.0f/600.0f, 0.1f, 100.0f);
+
+    // 设置控制器
+    TrackBallController controller(&perspective_camera, glm::vec3(0.0f), 3.0f); // 距离设为3
+    // 调整灵敏度
+    controller.setSensitivity(0.005f);
+    controller.setScrollSensitivity(0.2f);
 
     glClearColor(0.2, 0.3, 0.3, 1);
+    // 开启深度检测
     glEnable(GL_DEPTH_TEST);
+
     while (application->update()) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.bind();
         glBindVertexArray(vao);
-        GLuint u_location = glGetUniformLocation(shader.getProgramID(), "u_time");
-        glUniform1f(u_location, glfwGetTime());
 
-        texture.setSampler(shader.getProgramID(), {"sampler_"});
+        // 将控制器指针存入窗口，供静态回调使用
+        glfwSetWindowUserPointer(window, &controller);
+        windowCallBackUpdate(window);
         // 模型矩阵
-        mat4 model = rotate(mat4(1.0), radians(-55.0f), vec3(1.0, 1.0, 0.0));
+        mat4 model = translate(mat4(1.0), vec3(0.0, 0.0, 0.0));
         // 视图矩阵
-        glfwSetInputMode(application->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        processInput(application->getWindow());
-        glfwSetCursorPosCallback(application->getWindow(), mouse_callback);
-        float radius = 10.0f;
-        float camX = sin(glfwGetTime()) * radius;
-        float camZ = cos(glfwGetTime()) * radius;
-        mat4 view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        mat4 view =  perspective_camera.getViewMatrix();
         // 投影矩阵
-        mat4 projection = perspective(radians(45.0f), float(800/600), 0.1f, 100.0f);
+        mat4 projection = perspective_camera.getProjectionMatrix();
         // 传入矩阵
-        GLuint modelLoc = glGetUniformLocation(shader.getProgramID(), "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
-        GLuint viewLoc = glGetUniformLocation(shader.getProgramID(), "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-        GLuint projectionLoc = glGetUniformLocation(shader.getProgramID(), "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
+        shader.setMatrix({"model"}, model);
+        shader.setMatrix({"view"}, view);
+        shader.setMatrix({"projection"}, projection);
 
         glDrawArrays(GL_TRIANGLES, 0 ,36);
-
     }
 
     application->destroy();
