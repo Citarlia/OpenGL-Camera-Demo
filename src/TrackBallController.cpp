@@ -148,11 +148,14 @@ void TrackBallController::keyCallBack(GLFWwindow *window, int key, int scancode,
     auto* controller = static_cast<TrackBallController*>(glfwGetWindowUserPointer(window));
     if (!controller || !controller->m_enabled) return;
 
+    std::cout << "TrackBallController called!\n";
+
     // 按下R键复原
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         controller->m_pitch = 0.0f;
         controller->m_yaw = 0.0f;
         controller->m_target = vec3(0.0);
+        controller->m_radius = 3.0f;
         controller->m_camera->position = vec3(0.0, 0.0, controller->m_radius);
         controller->m_camera->viewPoint = vec3(0.0, 0.0, 0.0);
     }

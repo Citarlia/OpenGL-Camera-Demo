@@ -21,6 +21,8 @@ add_executable(OpenGLBasic src/glad.c main.cpp src/Shader.cpp
         src/OrthographicCamera.cpp
         src/PerspectiveCamera.cpp
         src/TrackBallController.cpp
+        src/Controller.cpp
+        src/Controller.h
 )
 
 # 4. 链接库

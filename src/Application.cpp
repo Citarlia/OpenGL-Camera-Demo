@@ -9,6 +9,12 @@ Application::Application() {
 
 }
 
+void Application::frameBufferResizeCallBack(GLFWwindow *window, int width, int height) {
+    if (Application::getInstance()->resize_call_back_ != nullptr) {
+        Application::getInstance()->resize_call_back_(width, height);
+    }
+}
+
 Application::~Application() {
 
 }
@@ -57,8 +63,18 @@ void Application::destroy() {
     glfwTerminate();
 }
 
-void Application::frameBufferResizeCallBack(GLFWwindow *window, int width, int height) {
-    if (Application::getInstance()->resize_call_back_ != nullptr) {
-        Application::getInstance()->resize_call_back_(width, height);
-    }
+void Application::setCursorPosCallBack(CursorCallBack cursor_call_back) {
+    glfwSetCursorPosCallback(window, cursor_call_back);
+}
+
+void Application::setMouseButtonCallBack(MouseButtonCallBack mouse_button_call_back) {
+    glfwSetMouseButtonCallback(window, mouse_button_call_back);
+}
+
+void Application::setScrollCallback(ScrollCallBack scroll_call_back) {
+    glfwSetScrollCallback(window, scroll_call_back);
+}
+
+void Application::setKeyCallBack(KeyCallBack key_call_back) {
+    glfwSetKeyCallback(window, key_call_back);
 }

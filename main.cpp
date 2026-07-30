@@ -18,12 +18,12 @@ void onResize(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void windowCallBackUpdate(GLFWwindow* window) {
+void windowCallBackRegistry(Application* application) {
     // 注册回调
-    glfwSetMouseButtonCallback(window, TrackBallController::mouseButtonCallback);
-    glfwSetCursorPosCallback(window, TrackBallController::cursorPosCallback);
-    glfwSetScrollCallback(window, TrackBallController::scrollCallback);
-    glfwSetKeyCallback(window, TrackBallController::keyCallBack);
+    application->setCursorPosCallBack(TrackBallController::cursorPosCallback);
+    application->setMouseButtonCallBack(TrackBallController::mouseButtonCallback);
+    application->setScrollCallback(TrackBallController::scrollCallback);
+    application->setKeyCallBack(TrackBallController::keyCallBack);
 }
 
 float vertexes[] = {
@@ -119,12 +119,12 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     // 将控制器指针存入窗口，供静态回调使用
     glfwSetWindowUserPointer(window, &controller);
-    windowCallBackUpdate(window);
+    windowCallBackRegistry(application);
     while (application->update()) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.bind();
         glBindVertexArray(vao);
-        
+
         // 模型矩阵
         mat4 model = translate(mat4(1.0), vec3(0.0, 0.0, 0.0));
         // 视图矩阵
