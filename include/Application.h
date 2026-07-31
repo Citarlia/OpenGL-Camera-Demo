@@ -9,7 +9,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "Controller.h"
 
 using ResizeCallBack = void(*)(int width, int height);
 using CursorCallBack = void(*)(GLFWwindow* window, double xpos, double ypos);

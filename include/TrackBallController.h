@@ -26,7 +26,7 @@ public:
     void setEnabled(bool enabled) { m_enabled = enabled; }
 
     // 更新摄像机矩阵（应在渲染循环中调用，或者自动在回调中更新）
-    void updateCamera();
+    void update(float deltaTime);
 
     // ---- 静态回调函数，用于注册到 GLFW ----
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);

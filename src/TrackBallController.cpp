@@ -40,12 +40,13 @@ vec3 TrackBallController::sphericalToCartesian() const {
     return pos + m_target;
 }
 
-void TrackBallController::updateCamera() {
+void TrackBallController::update(float deltaTime) {
     if (!m_camera) return;
 
     if (m_scrollMoved) {
         m_camera->position = sphericalToCartesian();
         m_camera->viewPoint = m_target;
+        m_scrollMoved = false;
     }
 
     if (m_leftIsDragging) {
@@ -55,12 +56,19 @@ void TrackBallController::updateCamera() {
 
     if (m_middleIsDragging) {
         // 将摄像机位置和摄像机观察点同时向鼠标平移方向移动
-        m_camera->position -= m_scrollSensitivity * 0.005f * static_cast<float>(dx) * m_camera->right;
-        m_camera->position += m_scrollSensitivity * 0.01f * static_cast<float>(dy) * m_camera->up;
-        m_target -= m_scrollSensitivity * 0.005f * static_cast<float>(dx) * m_camera->right;
-        m_target += m_scrollSensitivity * 0.01f * static_cast<float>(dy) * m_camera->up;
+        m_camera->position -= 10 * deltaTime * m_scrollSensitivity * static_cast<float>(dx) * normalize(m_camera->right);
+        m_camera->position += 10 * deltaTime * m_scrollSensitivity * static_cast<float>(dy) * normalize(m_camera->up);
+        m_target -= 10 * deltaTime * m_scrollSensitivity * static_cast<float>(dx) * normalize(m_camera->right);
+        m_target += 10 * deltaTime * m_scrollSensitivity * static_cast<float>(dy) * normalize(m_camera->up);
         m_camera->viewPoint = m_target;
     }
+    // 重新计算摄像机的位置
+    m_camera->front = m_camera->viewPoint - m_camera->position;
+    m_camera->right = cross(m_camera->front, m_camera->up);
+
+    // 每次更新后差值立刻设0
+    dx = 0;
+    dy = 0;
     // 注意：如果 Camera 的构造函数或 getViewMatrix 中依赖了 front/right/up 的计算，
     // 可能需要显式更新它们（例如在 getViewMatrix 中重新计算），但通常 lookAt 会处理。
 }
@@ -115,17 +123,12 @@ void TrackBallController::cursorPosCallback(GLFWwindow* window, double xpos, dou
         // 限制 pitch 防止万向锁（-89° ~ 89°）
         const float maxPitch = radians(89.0f);
         controller->m_pitch = std::clamp(controller->m_pitch, -maxPitch, maxPitch);
-
-        // 更新摄像机
-        controller->updateCamera();
     }
     if (controller->m_middleIsDragging) {
         controller->dx = xpos - controller->m_lastX;
         controller->dy = ypos - controller->m_lastY;
         controller->m_lastX = xpos;
         controller->m_lastY = ypos;
-
-        controller->updateCamera();
     }
 }
 
@@ -138,17 +141,11 @@ void TrackBallController::scrollCallback(GLFWwindow* window, double xoffset, dou
     controller->m_radius -= static_cast<float>(yoffset) * controller->m_scrollSensitivity;
     // 防止距离太近或穿模
     controller->m_radius = std::max(controller->m_radius, 0.1f);
-
-    controller->updateCamera();
-
-    controller->m_scrollMoved = false;
 }
 
 void TrackBallController::keyCallBack(GLFWwindow *window, int key, int scancode, int action, int mods) {
     auto* controller = static_cast<TrackBallController*>(glfwGetWindowUserPointer(window));
     if (!controller || !controller->m_enabled) return;
-
-    std::cout << "TrackBallController called!\n";
 
     // 按下R键复原
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {

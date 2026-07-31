@@ -8,10 +8,12 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include "Application.h"
+#include "FPSCounter.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "PerspectiveCamera.h"
 #include "TrackBallController.h"
+#include "GameCameraController.h"
 using namespace glm;
 
 void onResize(int width, int height) {
@@ -114,17 +116,29 @@ int main() {
     controller.setSensitivity(0.005f);
     controller.setScrollSensitivity(0.2f);
 
+    GameCameraController game_camera_controller(&perspective_camera, vec3(0.0));
+
     glClearColor(0.2, 0.3, 0.3, 1);
     // 开启深度检测
     glEnable(GL_DEPTH_TEST);
     // 将控制器指针存入窗口，供静态回调使用
     glfwSetWindowUserPointer(window, &controller);
     windowCallBackRegistry(application);
+    FPSCounter fpsCounter(2.0f);
+    double lastTime = glfwGetTime();
+
     while (application->update()) {
+        fpsCounter.tick();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.bind();
         glBindVertexArray(vao);
 
+        double currentTime = glfwGetTime();
+        auto deltaTime = static_cast<float>(currentTime - lastTime);
+        lastTime = currentTime;
+
+        // ... 处理输入、更新等
+        controller.update(deltaTime);
         // 模型矩阵
         mat4 model = translate(mat4(1.0), vec3(0.0, 0.0, 0.0));
         // 视图矩阵
