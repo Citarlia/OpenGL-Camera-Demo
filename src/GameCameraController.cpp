@@ -16,8 +16,6 @@ GameCameraController::GameCameraController(Camera *camera)
     , m_currentY(0)
     , m_speed(5.0f)
     , m_sensitivity(0.05f)
-    , m_dx(0)
-    , m_dy(0)
     , m_pitch(0.0)
     , m_yaw(0.0)
     , m_enabled(true)
@@ -74,22 +72,15 @@ void GameCameraController::cursorPosCallBack(GLFWwindow* window, double xpos, do
     const float max_pitch = 89.0f;
     controller->m_pitch = std::clamp(controller->m_pitch, -max_pitch, max_pitch);
 
-    vec3 front;
-    front.x = cos(radians(controller->m_pitch)) * sin(radians(controller->m_yaw));
-    front.y = sin(radians(controller->m_pitch));
-    front.z = -cos(radians(controller->m_pitch)) * cos(radians(controller->m_yaw));
-    controller->m_camera->front = normalize(front);
-
-    vec3 worldUp(0.0f, 1.0f, 0.0f);
-    controller->m_camera->right = normalize(cross(worldUp, controller->m_camera->front));
-    controller->m_camera->up = normalize(cross(controller->m_camera->front, controller->m_camera->right));
-
-    controller->m_camera->viewPoint = controller->m_camera->position + controller->m_camera->front;
-
 }
 
 void GameCameraController::scrollCallBack(GLFWwindow *window, double xoffset, double yoffset) {
-
+    auto* controller = static_cast<GameCameraController*>(glfwGetWindowUserPointer(window));
+    if (!controller || !controller->m_enabled) return;
+    // yoffset > 0 表示向上滚动（加速/减速）
+    controller->m_speed += static_cast<float>(yoffset);
+    // 防止速度变负
+    if (controller->m_speed < 0) controller->m_speed = 0;
 }
 
 // 每帧调用的更新函数（在主循环中调用）
@@ -98,13 +89,32 @@ void GameCameraController::update(const float deltaTime) {
 
     // 计算移动方向（归一化，防止斜向速度过快）
     vec3 moveDir(0.0f);
-    if (m_keyMap[GLFW_KEY_W]) moveDir += m_camera->front;
-    if (m_keyMap[GLFW_KEY_S]) moveDir -= m_camera->front;
+
+    // 只操作 x z 使得仅在 x z 平面内运动
+    if (m_keyMap[GLFW_KEY_W]) {
+        moveDir.x += m_camera->front.x;
+        moveDir.z += m_camera->front.z;
+    }
+    if (m_keyMap[GLFW_KEY_S]) {
+        moveDir.x -= m_camera->front.x;
+        moveDir.z -= m_camera->front.z;
+    }
     if (m_keyMap[GLFW_KEY_A]) moveDir += m_camera->right;
     if (m_keyMap[GLFW_KEY_D]) moveDir -= m_camera->right;
     if (m_keyMap[GLFW_KEY_SPACE]) moveDir += m_camera->up;
     if (m_keyMap[GLFW_KEY_LEFT_SHIFT] || m_keyMap[GLFW_KEY_RIGHT_SHIFT]) 
         moveDir -= m_camera->up;
+
+    // 通过pitch和yaw计算摄像机的指向向量
+    m_camera->front = normalize(sphericalToCartesian());
+
+    // 用世界坐标下的穹顶向量带入计算
+    vec3 worldUp(0.0f, 1.0f, 0.0f);
+    m_camera->right = normalize(cross(worldUp, m_camera->front));
+    m_camera->up = normalize(cross(m_camera->front, m_camera->right));
+
+    // 更新摄像机的视点
+    m_camera->viewPoint = m_camera->position + m_camera->front;
 
     // 如果没有任何按键，直接返回
     if (length(moveDir) < 0.001f) return;
@@ -116,10 +126,10 @@ void GameCameraController::update(const float deltaTime) {
     m_camera->viewPoint += moveDir * speed;  // 注意：这里 viewPoint 和 position 同步移动是否合理？取决于你的相机设计
 }
 
-vec3 GameCameraController::sphericalToCartesian() {
+vec3 GameCameraController::sphericalToCartesian() const {
     vec3 pos;
     pos.x = cos(radians(m_pitch)) * sin(radians(m_yaw));
     pos.y = sin(radians(m_pitch));
-    pos.z = cos(radians(m_pitch)) * cos(radians(m_yaw));
+    pos.z = -cos(radians(m_pitch)) * cos(radians(m_yaw));
     return pos;
 }

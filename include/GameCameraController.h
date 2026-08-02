@@ -42,10 +42,6 @@ private:
     float m_speed; // 移动速度
     float m_sensitivity; // 鼠标灵敏度
 
-    // 偏移量
-    float m_dx;
-    float m_dy;
-
     float m_pitch; // 俯仰角
     float m_yaw; // 偏航角
 
@@ -56,7 +52,7 @@ private:
     std::map<int, bool> m_keyMap; // 存储按下的键位
     bool hasKeyPressed;
 
-    vec3 sphericalToCartesian();
+    vec3 sphericalToCartesian() const;
 };
 
 
