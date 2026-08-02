@@ -20,12 +20,20 @@ void onResize(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void windowCallBackRegistry(Application* application) {
+static void setTrackBallControllerCallBackRegistry(Application* application) {
     // 注册回调
-    application->setCursorPosCallBack(TrackBallController::cursorPosCallback);
-    application->setMouseButtonCallBack(TrackBallController::mouseButtonCallback);
-    application->setScrollCallback(TrackBallController::scrollCallback);
+    application->setCursorPosCallBack(TrackBallController::cursorPosCallBack);
+    application->setMouseButtonCallBack(TrackBallController::mouseButtonCallBack);
+    application->setScrollCallback(TrackBallController::scrollCallBack);
     application->setKeyCallBack(TrackBallController::keyCallBack);
+}
+
+static void setGameControllerCallBackRegistry(Application* application) {
+    // 注册回调
+    application->setCursorPosCallBack(GameCameraController::cursorPosCallBack);
+    application->setScrollCallback(GameCameraController::scrollCallBack);
+    application->setKeyCallBack(GameCameraController::keyCallBack);
+    application->setCursorMode(GLFW_CURSOR_DISABLED);
 }
 
 float vertexes[] = {
@@ -116,14 +124,14 @@ int main() {
     controller.setSensitivity(0.005f);
     controller.setScrollSensitivity(0.2f);
 
-    GameCameraController game_camera_controller(&perspective_camera, vec3(0.0));
+    GameCameraController game_camera_controller(&perspective_camera);
 
     glClearColor(0.2, 0.3, 0.3, 1);
     // 开启深度检测
     glEnable(GL_DEPTH_TEST);
     // 将控制器指针存入窗口，供静态回调使用
-    glfwSetWindowUserPointer(window, &controller);
-    windowCallBackRegistry(application);
+    glfwSetWindowUserPointer(window, &game_camera_controller);
+    setGameControllerCallBackRegistry(application);
     FPSCounter fpsCounter(2.0f);
     double lastTime = glfwGetTime();
 
@@ -138,7 +146,7 @@ int main() {
         lastTime = currentTime;
 
         // ... 处理输入、更新等
-        controller.update(deltaTime);
+        game_camera_controller.update(deltaTime);
         // 模型矩阵
         mat4 model = translate(mat4(1.0), vec3(0.0, 0.0, 0.0));
         // 视图矩阵

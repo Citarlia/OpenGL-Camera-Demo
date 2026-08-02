@@ -34,9 +34,9 @@ TrackBallController::TrackBallController(Camera* camera, const vec3& target, flo
 
 vec3 TrackBallController::sphericalToCartesian() const {
     vec3 pos;
-    pos.x = m_radius * std::cos(m_pitch) * std::sin(m_yaw);
-    pos.y = m_radius * std::sin(m_pitch);
-    pos.z = m_radius * std::cos(m_pitch) * std::cos(m_yaw);
+    pos.x = m_radius * cos(radians(m_pitch)) * sin(radians(m_yaw));
+    pos.y = m_radius * sin(radians(m_pitch));
+    pos.z = m_radius * cos(radians(m_pitch)) * cos(radians(m_yaw));
     return pos + m_target;
 }
 
@@ -75,7 +75,7 @@ void TrackBallController::update(float deltaTime) {
 
 // ---------- 静态回调函数 ----------
 
-void TrackBallController::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+void TrackBallController::mouseButtonCallBack(GLFWwindow* window, int button, int action, int mods) {
     auto* controller = static_cast<TrackBallController*>(glfwGetWindowUserPointer(window));
     if (!controller || !controller->m_enabled) return;
 
@@ -107,7 +107,7 @@ void TrackBallController::mouseButtonCallback(GLFWwindow* window, int button, in
     }
 }
 
-void TrackBallController::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+void TrackBallController::cursorPosCallBack(GLFWwindow* window, double xpos, double ypos) {
     auto* controller = static_cast<TrackBallController*>(glfwGetWindowUserPointer(window));
     if (!controller || !controller->m_enabled || (!controller->m_leftIsDragging && !controller->m_rightIsDragging && !controller->m_middleIsDragging)) return;
     if (controller->m_leftIsDragging) {
@@ -132,7 +132,7 @@ void TrackBallController::cursorPosCallback(GLFWwindow* window, double xpos, dou
     }
 }
 
-void TrackBallController::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+void TrackBallController::scrollCallBack(GLFWwindow* window, double xoffset, double yoffset) {
     auto* controller = static_cast<TrackBallController*>(glfwGetWindowUserPointer(window));
     if (!controller || !controller->m_enabled) return;
     // 监视滚轮是否转动

@@ -29,9 +29,9 @@ public:
     void update(float deltaTime);
 
     // ---- 静态回调函数，用于注册到 GLFW ----
-    static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-    static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
-    static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+    static void mouseButtonCallBack(GLFWwindow* window, int button, int action, int mods);
+    static void cursorPosCallBack(GLFWwindow* window, double xpos, double ypos);
+    static void scrollCallBack(GLFWwindow* window, double xoffset, double yoffset);
     static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 private:
