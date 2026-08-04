@@ -26,12 +26,12 @@ public:
     void setEnabled(bool enabled) { m_enabled = enabled; }
 
     // 更新摄像机矩阵（应在渲染循环中调用，或者自动在回调中更新）
-    void updateCamera();
+    void update(float deltaTime);
 
     // ---- 静态回调函数，用于注册到 GLFW ----
-    static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-    static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
-    static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+    static void mouseButtonCallBack(GLFWwindow* window, int button, int action, int mods);
+    static void cursorPosCallBack(GLFWwindow* window, double xpos, double ypos);
+    static void scrollCallBack(GLFWwindow* window, double xoffset, double yoffset);
     static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 private:

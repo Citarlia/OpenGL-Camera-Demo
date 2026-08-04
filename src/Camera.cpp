@@ -9,7 +9,5 @@ Camera::Camera() = default;
 Camera::~Camera() = default;
 
 mat4 Camera::getViewMatrix() {
-    front = viewPoint - position;
-    right = cross(front, up);
     return lookAt(position, viewPoint, up);
 }

@@ -9,7 +9,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "Controller.h"
 
 using ResizeCallBack = void(*)(int width, int height);
 using CursorCallBack = void(*)(GLFWwindow* window, double xpos, double ypos);
@@ -43,6 +42,7 @@ public:
     void setMouseButtonCallBack(MouseButtonCallBack mouse_button_call_back);
     void setScrollCallback(ScrollCallBack scroll_call_back);
     void setKeyCallBack(KeyCallBack key_call_back);
+    void setCursorMode(GLenum mode);
 
     unsigned int getWidth() const {return width;}
     unsigned int getHeight() const {return height;}

@@ -78,3 +78,7 @@ void Application::setScrollCallback(ScrollCallBack scroll_call_back) {
 void Application::setKeyCallBack(KeyCallBack key_call_back) {
     glfwSetKeyCallback(window, key_call_back);
 }
+
+void Application::setCursorMode(GLenum mode) {
+    glfwSetInputMode(window, GLFW_CURSOR, mode);
+}
